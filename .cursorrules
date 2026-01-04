@@ -1,0 +1,64 @@
+# Cursor Agent Configuration - fracture-synth-data-pipeline
+# Repository-specific rules for synthetic data pipeline
+# See workspace-level .cursorrules for common permissions and guidelines
+
+## Repository Context
+
+This is the fracture-synth-data-pipeline repository:
+- Generates synthetic training data for model training
+- Processes meeting transcripts into structured training samples
+- Validates data quality and realism
+- Manages versioned datasets
+
+## Technology Stack
+
+- **Languages**: Python
+- **Orchestration**: Prefect, Dagster
+- **LLM Integration**: OpenAI, Azure OpenAI
+- **Validation**: Great Expectations, JSON Schema
+- **Data Formats**: JSON, JSONL
+
+## Repository-Specific Guidelines
+
+### Data Generation
+- Generate realistic synthetic scenarios from transcripts
+- Use LLM-as-a-judge for quality validation
+- Follow schemas in `schemas/` directory
+- Version all generated datasets
+
+### Pipeline Development
+- Use Prefect or Dagster for orchestration
+- Make pipelines idempotent and resumable
+- Add proper error handling and retries
+- Log pipeline execution details
+
+### Data Validation
+- Validate against JSON schemas
+- Use Great Expectations for data quality checks
+- Run realism validators (LLM-as-a-judge)
+- Document validation failures
+
+### Data Storage
+- Store raw transcripts in `data/raw_transcripts/`
+- Store synthetic outputs in `data/synthetic_outputs/`
+- Use registry for approved datasets in `data/registry/`
+- Never commit large datasets to git
+
+### Credentials & Secrets
+- Store credentials in Azure Key Vault
+- Never commit API keys or secrets
+- Use environment variables for configuration
+- Document required credentials
+
+### Code Quality
+- Follow Python PEP 8 style guide
+- Add type hints for better code clarity
+- Include comprehensive docstrings
+- Write tests for validators and core functions
+
+## Common Workflows
+
+1. **Generating new dataset**: Process transcripts, generate synthetic data, validate, register
+2. **Adding new validator**: Create validator class, add to pipeline, test, document
+3. **Updating schemas**: Update JSON schema, update validators, test with existing data
+

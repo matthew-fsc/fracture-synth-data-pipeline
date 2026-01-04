@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Company Profile",
+  "description": "Synthetic company profile with operational characteristics",
+  "type": "object",
+  "required": [
+    "company_id",
+    "company_name",
+    "industry",
+    "revenue_range_min",
+    "revenue_range_max",
+    "employee_count",
+    "headquarters_location",
+    "operational_metrics",
+    "generated_at"
+  ],
+  "properties": {
+    "company_id": {
+      "type": "string",
+      "description": "Unique identifier for the company"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Company name"
+    },
+    "industry": {
+      "type": "string",
+      "description": "Industry sector"
+    },
+    "naics_code": {
+      "type": "string",
+      "description": "NAICS industry classification code"
+    },
+    "revenue_range_min": {
+      "type": "number",
+      "description": "Minimum annual revenue in USD",
+      "minimum": 0
+    },
+    "revenue_range_max": {
+      "type": "number",
+      "description": "Maximum annual revenue in USD",
+      "minimum": 0
+    },
+    "employee_count": {
+      "type": "integer",
+      "description": "Number of employees",
+      "minimum": 1
+    },
+    "headquarters_location": {
+      "type": "string",
+      "description": "Headquarters location"
+    },
+    "operational_metrics": {
+      "type": "object",
+      "required": [
+        "ticket_volume_daily",
+        "ticket_volume_monthly",
+        "handoff_delay_avg_hours",
+        "handoff_failure_rate",
+        "workflow_stall_count",
+        "compliance_failures_monthly",
+        "advisor_count",
+        "department_count",
+        "realtime_ingestion_volume_daily",
+        "sla_breach_rate"
+      ],
+      "properties": {
+        "ticket_volume_daily": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Average daily ticket volume"
+        },
+        "ticket_volume_monthly": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Average monthly ticket volume"
+        },
+        "handoff_delay_avg_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Average handoff delay in hours"
+        },
+        "handoff_failure_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Handoff failure rate (0-1)"
+        },
+        "workflow_stall_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of workflow stalls per month"
+        },
+        "compliance_failures_monthly": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Monthly compliance failures"
+        },
+        "advisor_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of advisors/consultants"
+        },
+        "department_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of departments"
+        },
+        "realtime_ingestion_volume_daily": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Daily realtime ingestion volume"
+        },
+        "sla_breach_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "SLA breach rate (0-1)"
+        }
+      }
+    },
+    "kpis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kpi_name", "kpi_value", "kpi_unit", "trend"],
+        "properties": {
+          "kpi_name": {
+            "type": "string"
+          },
+          "kpi_value": {
+            "type": "number"
+          },
+          "kpi_unit": {
+            "type": "string"
+          },
+          "target_value": {
+            "type": "number"
+          },
+          "trend": {
+            "type": "string",
+            "enum": ["improving", "stable", "declining"]
+          },
+          "last_updated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "pain_points": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of operational pain points"
+    },
+    "departments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of departments"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when profile was generated"
+    },
+    "realism_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "LLM-assessed realism score"
+    }
+  }
+}
+

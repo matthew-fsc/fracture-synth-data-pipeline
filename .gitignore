@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Data
+data/raw_transcripts/*.txt
+data/raw_transcripts/*.md
+data/synthetic_outputs/*
+!data/synthetic_outputs/.gitkeep
+data/registry/*
+!data/registry/.gitkeep
+
+# Secrets
+*.pem
+*.key
+secrets/
+credentials.json
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Prefect
+.prefect/
+
+# Dagster
+.dagster/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Great Expectations
+great_expectations/.ge_store_backend_id
+great_expectations/expectations/
+great_expectations/validations/
+
+# W&B
+wandb/
+

@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Training Sample",
+  "description": "Training sample for model training in JSON + CSV formats",
+  "type": "object",
+  "required": [
+    "sample_id",
+    "company_profile",
+    "system_manifest",
+    "created_at",
+    "quality_scores"
+  ],
+  "properties": {
+    "sample_id": {
+      "type": "string",
+      "description": "Unique training sample identifier"
+    },
+    "company_profile": {
+      "$ref": "../company_profile.json"
+    },
+    "system_manifest": {
+      "$ref": "../system_manifest.json"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when sample was created"
+    },
+    "quality_scores": {
+      "type": "object",
+      "required": ["realism_score", "completeness_score", "schema_validation_passed"],
+      "properties": {
+        "realism_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Overall realism score"
+        },
+        "completeness_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Completeness score"
+        },
+        "schema_validation_passed": {
+          "type": "boolean",
+          "description": "Whether schema validation passed"
+        },
+        "quality_checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "check_name": {"type": "string"},
+              "passed": {"type": "boolean"},
+              "score": {"type": "number"},
+              "message": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata",
+      "properties": {
+        "pipeline_version": {"type": "string"},
+        "generation_parameters": {"type": "object"},
+        "validation_timestamp": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}
+
