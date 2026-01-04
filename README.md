@@ -227,6 +227,35 @@ mypy src/
 pre-commit install
 ```
 
+## Enhanced Pipeline
+
+An enhanced version of the pipeline with integrated modules is available:
+
+```python
+from src.pipeline_enhanced import enhanced_synthetic_data_generation_flow
+
+result = enhanced_synthetic_data_generation_flow(
+    industry="Technology",
+    enable_realworld_enhancement=True,
+    enable_enhanced_validation=True,
+    enable_monitoring=True
+)
+```
+
+See [docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md) for details on enhancements.
+
+## New Modules
+
+The pipeline now includes:
+- **Real-World Integration** - Pattern extraction and scenario enhancement
+- **Gap Analysis** - Training data gap detection and targeted generation
+- **Data Optimization** - Dataset balancing and priority scoring
+- **Enhanced Validation** - Great Expectations integration
+- **Monitoring** - Application Insights and cost tracking
+- **LLM Management** - Token usage and cost monitoring
+
+See [docs/NEW_MODULES_GUIDE.md](docs/NEW_MODULES_GUIDE.md) for usage examples.
+
 ## Issue Backlog
 
 See [issues.md](issues.md) for the complete list of pending implementations and enhancements. Issues are progressively closed as agents work through them.
