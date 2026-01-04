@@ -16,16 +16,19 @@ from prefect import flow, get_run_logger
 
 try:
     from src.synth_llm import TranscriptInput, ScenarioGenerator, RequirementScenario
-    from src.company_profiler import CompanyProfiler, CompanyProfile
-    from src.manifest_builder import ManifestBuilder, SystemManifest
+    from src.company_profiler import CompanyProfiler
+    from src.manifest_builder import ManifestBuilder
     from src.validators import RealismValidator, SchemaValidator
 except ImportError:
     from .synth_llm import TranscriptInput, ScenarioGenerator, RequirementScenario
-    from .company_profiler import CompanyProfiler, CompanyProfile
-    from .manifest_builder import ManifestBuilder, SystemManifest
+    from .company_profiler import CompanyProfiler
+    from .manifest_builder import ManifestBuilder
     from .validators import RealismValidator, SchemaValidator
 
 logger = logging.getLogger(__name__)
+
+# Shared schema validator instance (loaded once, reused across runs)
+_SCHEMA_VALIDATOR = SchemaValidator()
 
 
 @flow(name="synthetic-data-generation", log_prints=True)
@@ -50,7 +53,6 @@ def synthetic_data_generation_flow(
     logger = get_run_logger()
     logger.info("Starting synthetic data generation pipeline")
     
-    # Initialize configuration
     config = config or {}
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -89,6 +91,7 @@ def synthetic_data_generation_flow(
     
     # Generate scenarios from pain points if none extracted
     if not scenarios:
+        industry_domain = industry or company_profile.industry
         scenarios = [
             RequirementScenario(
                 scenario_id=f"scenario_{i+1}",
@@ -96,7 +99,7 @@ def synthetic_data_generation_flow(
                 business_context=pp,
                 pain_points=[pp],
                 urgency_level="medium",
-                industry_domain=industry or company_profile.industry,
+                industry_domain=industry_domain,
                 confidence_score=0.8
             )
             for i, pp in enumerate(company_profile.pain_points[:3])
@@ -108,48 +111,52 @@ def synthetic_data_generation_flow(
     logger.info(f"Built manifest: {manifest.manifest_id} with {manifest.total_requirements} requirements")
     
     # Validate
+    timestamp = datetime.utcnow()
     validation_results = {}
     
-    # Schema validation (fast, always run)
-    schema_validator = SchemaValidator()
-    schema_result = schema_validator.validate_system_manifest(manifest.dict())
+    # Convert to dict once (used in validation and output)
+    manifest_dict = manifest.dict()
+    
+    # Schema validation (reuse shared instance - schemas loaded once)
+    schema_result = _SCHEMA_VALIDATOR.validate_system_manifest(manifest_dict)
+    schema_passed = schema_result.passed
     validation_results["schema"] = {
         "manifest_validation": schema_result.dict(),
-        "all_passed": schema_result.passed
+        "all_passed": schema_passed
     }
-    logger.info(f"Schema validation: {'PASSED' if schema_result.passed else 'FAILED'}")
+    logger.info(f"Schema validation: {'PASSED' if schema_passed else 'FAILED'}")
     
     # Realism validation (optional)
+    realism_score = 0.8  # Default
     if enable_realism:
+        profile_dict = company_profile.dict()
         realism_validator = RealismValidator(endpoint, deployment, key_vault)
-        profile_score = realism_validator.validate_company_profile(company_profile.dict())
+        profile_score = realism_validator.validate_company_profile(profile_dict)
+        realism_score = profile_score.overall_score
         validation_results["realism"] = {
             "profile_score": profile_score.dict(),
             "all_passed": profile_score.passed
         }
         logger.info(f"Realism validation: {'PASSED' if profile_score.passed else 'FAILED'}")
+    else:
+        profile_dict = company_profile.dict()
     
     # Create training sample
-    sample_id = f"sample_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
-    timestamp = datetime.utcnow()
-    
-    # Convert to dict once
-    profile_dict = company_profile.dict()
-    manifest_dict = manifest.dict()
-    realism_score = validation_results.get("realism", {}).get("profile_score", {}).get("overall_score", 0.8)
+    sample_id = f"sample_{timestamp.strftime('%Y%m%d_%H%M%S')}"
+    timestamp_iso = timestamp.isoformat()
     
     training_sample = {
         "sample_id": sample_id,
         "company_profile": profile_dict,
         "system_manifest": manifest_dict,
-        "created_at": timestamp.isoformat(),
+        "created_at": timestamp_iso,
         "quality_scores": {
             "realism_score": realism_score,
-            "schema_validation_passed": validation_results["schema"]["all_passed"]
+            "schema_validation_passed": schema_passed
         },
         "metadata": {
             "pipeline_version": "0.1.0",
-            "validation_timestamp": timestamp.isoformat()
+            "validation_timestamp": timestamp_iso
         }
     }
     
@@ -158,9 +165,9 @@ def synthetic_data_generation_flow(
     with open(json_path, 'w', encoding='utf-8') as f:
         json.dump(training_sample, f, indent=2, default=str)
     
-    # Save CSV (simplified - only key fields)
+    # Save CSV (optimized single-row DataFrame)
     csv_path = output_dir / f"{sample_id}.csv"
-    pd.DataFrame({
+    pd.DataFrame([{
         "sample_id": sample_id,
         "company_id": company_profile.company_id,
         "company_name": company_profile.company_name,
@@ -170,8 +177,8 @@ def synthetic_data_generation_flow(
         "components_count": manifest.total_components,
         "complexity_score": manifest.complexity_score,
         "realism_score": realism_score,
-        "created_at": timestamp.isoformat()
-    }, index=[0]).to_csv(csv_path, index=False)
+        "created_at": timestamp_iso
+    }]).to_csv(csv_path, index=False)
     
     logger.info(f"Pipeline completed successfully: {sample_id}")
     
